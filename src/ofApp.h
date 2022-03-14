@@ -1,8 +1,13 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
-#include "ofxDatGui.h"
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <limits>
+#include <cmath>
 
 class ofApp : public ofBaseApp
 {
@@ -23,48 +28,24 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
-	void onButtonEvent(ofxDatGuiButtonEvent e);
-	void onToggleEvent(ofxDatGuiToggleEvent e);
-	void onSliderEvent(ofxDatGuiSliderEvent e);
-	void onDropdownEvent(ofxDatGuiDropdownEvent e);
-	void onColorPickerEvent(ofxDatGuiColorPickerEvent e);
+	void EraseContents(string filename);
+	void WriteToFile(string, std::vector<int>);
+	std::vector<int> ReadFile(string, int);
+	double PerlinNoise(int, int);
 
-	uint tIndex;
+	void GenerateMap();
 
-	bool start;
-	bool show_trails;
-	bool show_axis;
-	bool show_center;
 	ofEasyCam cam;
 	ofLight light;
-	ofxDatGui *UI;
-
-	glm::vec3 center_of_mass; // center of mass position
-	double Total_mass;
-	double proximity;
-	int star_relative_mass;
-
-	int Temp_Num_Planets;
-	int Temp_Num_Asteroids;
-	int Temp_Num_Stars;
-};
-
-class body
-{
-public:
-	// Constructor and destructor
-	body(int x, int y, int z, double mass_, int hue); // Initial coordinates and hue
-	~body();
-
-	void update(int body_num, bool show_trails);
-	void draw();
-
-	void acceleration_calculate(int body_num);
-
 	ofColor color;
-	double size;
-	double mass;
-	double abs_velocity;
-	glm::vec3 position, velocity, acceleration; // 3D vectors for particles physics
-	vector<glm::vec3> trail;
+	ofMesh mesh;
+
+private:
+	// map size
+	int h = 200;
+	int w = 200;
+	int freq = 10;
+	int perlin_h = h / freq + 1;
+	int perlin_w = w / freq + 1;
+	std::vector<std::vector<std::pair<double, double>>> PerlinGradient{perlin_w, std::vector<std::pair<double, double>>(perlin_h)};
 };
