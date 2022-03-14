@@ -88,9 +88,9 @@ double ofApp::PerlinNoise(int x, int y)
     f.clear();
     f.push_back(((corners[1].first * 10 - real_x) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[0] + ((real_x - corners[0].first * 10) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[1]);
     f.push_back(((corners[1].first * 10 - real_x) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[2] + ((real_x - corners[0].first * 10) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[3]);
-    
-    //Interpolate in the y direction
-    z = ((corners[0].second * 10 - real_y) / (corners[2].second * 10 - corners[0].second * 10)) *f[1] + ((real_y - corners[2].second * 10) / (corners[2].second * 10 - corners[0].second * 10)) *f[0] ;
+
+    // Interpolate in the y direction
+    z = ((corners[0].second * 10 - real_y) / (corners[2].second * 10 - corners[0].second * 10)) * f[1] + ((real_y - corners[2].second * 10) / (corners[2].second * 10 - corners[0].second * 10)) * f[0];
 
     return z;
 }
@@ -104,7 +104,7 @@ void ofApp::GenerateMap()
     {
         for (int x = 0; x < perlin_w; x++)
         {
-            PerlinGradient[x][y] = std::make_pair(ofRandom(-1, 1), ofRandom(-1, 1));
+            PerlinGradient[x][y] = std::make_pair(ofRandom(-alt, alt), ofRandom(-alt, alt));
             // std::cout << PerlinGradient[x][y].first << " " << PerlinGradient[x][y].second << std::endl;
         }
     }
@@ -120,7 +120,7 @@ void ofApp::GenerateMap()
             coordinates.push_back(PerlinNoise(x, y));
 
             mesh.addVertex(ofPoint(coordinates[0], coordinates[1], coordinates[2]));
-            mesh.addColor(ofFloatColor(255, 255, 255));
+            mesh.addColor(ofFloatColor(62, 99, 86));
 
             WriteToFile("map.txt", coordinates);
         }
@@ -139,14 +139,18 @@ void ofApp::GenerateMap()
             mesh.addIndex(x + (y + 1) * w);       // 10
         }
     }
+
+    setNormals(mesh);
 }
 
 //--------------------------------------------------------------
 void ofApp::setup()
 {
     ofSetVerticalSync(true);
-    ofSetBackgroundColor(0, 0, 0);
-    ofSetSphereResolution(10);
+    ofSetBackgroundColor(21, 26, 30);
+    glShadeModel(GL_FLAT);
+    ofSetSmoothLighting(true);
+
     GenerateMap();
 }
 
@@ -163,12 +167,12 @@ void ofApp::draw()
     light.enable();
     cam.begin();
 
-    mesh.drawWireframe();
+    mesh.draw();
 
     cam.end();
-    light.disable();
-    ofDisableDepthTest();
-    ofDisableLighting();
+    // light.disable();
+    // ofDisableDepthTest();
+    // ofDisableLighting();
 }
 
 //--------------------------------------------------------------
@@ -222,6 +226,36 @@ void ofApp::gotMessage(ofMessage msg)
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo)
-{
+void ofApp::setNormals( ofMesh &mesh ){
+    //The number of the vertices
+    int nV = mesh.getNumVertices();
+    //The number of the triangles
+    int nT = mesh.getNumIndices() / 3;
+    vector<glm::vec3> norm( nV ); //Array for the normals
+    //Scan all the triangles. For each triangle add its
+    //normal to norm’s vectors of triangle’s vertices
+    for (int t=0; t<nT; t++) {
+        //Get indices of the triangle t
+        int i1 = mesh.getIndex( 3 * t );
+        int i2 = mesh.getIndex( 3 * t + 1 );
+        int i3 = mesh.getIndex( 3 * t + 2 );
+        //Get vertices of the triangle
+        const ofPoint &v1 = mesh.getVertex( i1 );
+        const ofPoint &v2 = mesh.getVertex( i2 );
+        const ofPoint &v3 = mesh.getVertex( i3 );
+        //Compute the triangle’s normal
+        ofPoint dir = ( (v2 - v1).getCrossed( v3 - v1 ) ).getNormalized();
+        //Accumulate it to norm array for i1, i2, i3
+        norm[ i1 ] += dir;
+        norm[ i2 ] += dir;
+        norm[ i3 ] += dir;
+    }
+    //Normalize the normal’s length
+    for (int i=0; i<nV; i++) {
+        norm[i] = glm::normalize(norm[i]);
+    }
+    //Set the normals to mesh
+    mesh.clearNormals();
+    mesh.addNormals(norm);
+    
 }

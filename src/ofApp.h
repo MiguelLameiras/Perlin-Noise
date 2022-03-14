@@ -25,7 +25,6 @@ public:
 	void mouseEntered(int x, int y);
 	void mouseExited(int x, int y);
 	void windowResized(int w, int h);
-	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
 	void EraseContents(string filename);
@@ -34,6 +33,7 @@ public:
 	double PerlinNoise(int, int);
 
 	void GenerateMap();
+	void setNormals(ofMesh &);
 
 	ofEasyCam cam;
 	ofLight light;
@@ -42,9 +42,10 @@ public:
 
 private:
 	// map size
-	int h = 200;
-	int w = 200;
+	int h = 100;
+	int w = 100;
 	int freq = 10;
+	double alt = 1;//Intensity of terrain
 	int perlin_h = h / freq + 1;
 	int perlin_w = w / freq + 1;
 	std::vector<std::vector<std::pair<double, double>>> PerlinGradient{perlin_w, std::vector<std::pair<double, double>>(perlin_h)};
