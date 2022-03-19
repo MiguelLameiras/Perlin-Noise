@@ -20,7 +20,6 @@ for line in file:
 
 plt.scatter(x, y, c=z, cmap='viridis')
 
-#Titulos dos eixos
 plt.title("Perlin Noise", fontsize=18)
 plt.xlabel("x", fontsize=18)
 plt.ylabel("y", fontsize=18)
@@ -28,5 +27,8 @@ plt.ylabel("y", fontsize=18)
 ax = plt.gca()
 ax.xaxis.set_minor_locator(tck.AutoMinorLocator())
 ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+
+cbar = plt.colorbar()
+cbar.set_label('Z Values', rotation=270)
 
 plt.savefig("2D_Map.png", dpi = 300)
