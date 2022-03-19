@@ -28,7 +28,7 @@ public:
 	void gotMessage(ofMessage msg);
 
 	void EraseContents(string filename);
-	void WriteToFile(string, std::vector<int>);
+	void WriteToFile(string, std::vector<double>);
 	std::vector<int> ReadFile(string, int);
 	double PerlinNoise(int, int);
 

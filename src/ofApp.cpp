@@ -9,7 +9,7 @@ void ofApp::EraseContents(string filename)
     FILE.close();
 }
 
-void ofApp::WriteToFile(string filename, vector<int> coordinates)
+void ofApp::WriteToFile(string filename, vector<double> coordinates)
 {
     ofstream FILE;
     FILE.open(filename, ios::app);
@@ -109,7 +109,7 @@ void ofApp::GenerateMap()
         }
     }
 
-    std::vector<int> coordinates;
+    std::vector<double> coordinates;
     for (int y = 0; y < h; y++)
     {
         for (int x = 0; x < w; x++)
@@ -167,7 +167,7 @@ void ofApp::draw()
     light.enable();
     cam.begin();
 
-    mesh.draw();
+    mesh.drawWireframe();
 
     cam.end();
     // light.disable();
