@@ -1,6 +1,6 @@
 # Perlin-Noise
 
-Terrain generation in [OpenFrameworks](https://github.com/openframeworks/openFrameworks) with the superposition of different layers of Perlin Noise.
+Terrain generation in [OpenFrameworks](https://github.com/openframeworks/openFrameworks) using the superposition of different layers of Perlin Noise.
 
 ## Terrain Generated
 
