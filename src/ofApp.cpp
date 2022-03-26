@@ -55,7 +55,25 @@ vector<int> ofApp::ReadFile(string filename, int LINE)
     return coordinates;
 }
 
-double ofApp::PerlinNoise(int x, int y)
+std::vector<std::vector<std::pair<double, double>>> ofApp::PerlinNoiseGradient()
+{
+
+    std::vector<std::vector<std::pair<double, double>>> Gradient{w, std::vector<std::pair<double, double>>(h)};
+
+    // Generate grid of vectors
+    for (int y = 0; y < h; y++)
+    {
+        for (int x = 0; x < w; x++)
+        {
+            Gradient[x][y] = std::make_pair(ofRandom(-1, 1), ofRandom(-1, 1));
+            // std::cout << PerlinGradient[x][y].first << " " << PerlinGradient[x][y].second << std::endl;
+        }
+    }
+
+    return Gradient;
+}
+
+double ofApp::PerlinNoise(int x, int y,	int freq, std::vector<std::vector<std::pair<double, double>>> PerlinGradient)
 {
     // Variable to hold final result
     double z = 0;
@@ -70,14 +88,14 @@ double ofApp::PerlinNoise(int x, int y)
     dot_product.clear();
     corners.clear();
     // Closest corners to point
-    corners.push_back(std::make_pair((int)real_x / 10, (int)real_y / 10));
-    corners.push_back(std::make_pair((int)real_x / 10 + 1, (int)real_y / 10));
-    corners.push_back(std::make_pair((int)real_x / 10, (int)real_y / 10 + 1));
-    corners.push_back(std::make_pair((int)real_x / 10 + 1, (int)real_y / 10 + 1));
-    // Calculate dot product between de distance vector and distance vector
+    corners.push_back(std::make_pair((int)real_x / freq, (int)real_y / freq));
+    corners.push_back(std::make_pair((int)real_x / freq + 1, (int)real_y / freq));
+    corners.push_back(std::make_pair((int)real_x / freq, (int)real_y / freq + 1));
+    corners.push_back(std::make_pair((int)real_x / freq + 1, (int)real_y / freq + 1));
+    // Calculate dot product between de distance vector and gradient vector
     for (int i = 0; i < 4; i++)
     {
-        dot_product.push_back(PerlinGradient[corners[i].first][corners[i].second].first * (real_x - corners[i].first * 10) + PerlinGradient[corners[i].first][corners[i].second].second * (real_y - corners[i].second * 10));
+        dot_product.push_back(PerlinGradient[corners[i].first][corners[i].second].first * (real_x - corners[i].first * freq) + PerlinGradient[corners[i].first][corners[i].second].second * (real_y - corners[i].second * freq));
         // std::cout << i << " " << dot_product[i] << " " << corners[i].first << " " << corners[i].second << std::endl;
     }
 
@@ -86,11 +104,11 @@ double ofApp::PerlinNoise(int x, int y)
     // Interpolate in x direction
     std::vector<double> f;
     f.clear();
-    f.push_back(((corners[1].first * 10 - real_x) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[0] + ((real_x - corners[0].first * 10) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[1]);
-    f.push_back(((corners[1].first * 10 - real_x) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[2] + ((real_x - corners[0].first * 10) / (corners[1].first * 10 - corners[0].first * 10)) * dot_product[3]);
+    f.push_back(((corners[1].first * freq - real_x) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[0] + ((real_x - corners[0].first * freq) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[1]);
+    f.push_back(((corners[1].first * freq - real_x) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[2] + ((real_x - corners[0].first * freq) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[3]);
 
     // Interpolate in the y direction
-    z = ((corners[0].second * 10 - real_y) / (corners[2].second * 10 - corners[0].second * 10)) * f[1] + ((real_y - corners[2].second * 10) / (corners[2].second * 10 - corners[0].second * 10)) * f[0];
+    z = ((corners[0].second * freq - real_y) / (corners[2].second *freq - corners[0].second * freq)) * f[1] + ((real_y - corners[2].second * freq) / (corners[2].second * freq - corners[0].second * freq)) * f[0];
 
     return z;
 }
@@ -99,15 +117,7 @@ void ofApp::GenerateMap()
 {
     EraseContents("map.txt");
 
-    // Generate grid of vectors
-    for (int y = 0; y < perlin_h; y++)
-    {
-        for (int x = 0; x < perlin_w; x++)
-        {
-            PerlinGradient[x][y] = std::make_pair(ofRandom(-alt, alt), ofRandom(-alt, alt));
-            // std::cout << PerlinGradient[x][y].first << " " << PerlinGradient[x][y].second << std::endl;
-        }
-    }
+    std::vector<std::vector<std::pair<double, double>>> PerlinGradient = PerlinNoiseGradient();
 
     std::vector<double> coordinates;
     for (int y = 0; y < h; y++)
@@ -117,7 +127,7 @@ void ofApp::GenerateMap()
             coordinates.clear();
             coordinates.push_back(x - w / 2);
             coordinates.push_back(y - w / 2);
-            coordinates.push_back(PerlinNoise(x, y));
+            coordinates.push_back(2*PerlinNoise(x, y, 20,PerlinGradient) + 1.5*PerlinNoise(x, y, 5,PerlinGradient) + 1*PerlinNoise(x, y, 4,PerlinGradient) + 0.5*PerlinNoise(x, y, 3,PerlinGradient)  + 0.5*PerlinNoise(x, y, 2,PerlinGradient) );
 
             mesh.addVertex(ofPoint(coordinates[0], coordinates[1], coordinates[2]));
             mesh.addColor(ofFloatColor(62, 99, 86));

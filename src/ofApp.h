@@ -30,7 +30,8 @@ public:
 	void EraseContents(string filename);
 	void WriteToFile(string, std::vector<double>);
 	std::vector<int> ReadFile(string, int);
-	double PerlinNoise(int, int);
+	double PerlinNoise(int, int,int,std::vector<std::vector<std::pair<double, double>>>);
+	std::vector<std::vector<std::pair<double, double>>> PerlinNoiseGradient();
 
 	void GenerateMap();
 	void setNormals(ofMesh &);
@@ -44,9 +45,4 @@ private:
 	// map size
 	int h = 100;
 	int w = 100;
-	int freq = 10;
-	double alt = 1;//Intensity of terrain
-	int perlin_h = h / freq + 1;
-	int perlin_w = w / freq + 1;
-	std::vector<std::vector<std::pair<double, double>>> PerlinGradient{perlin_w, std::vector<std::pair<double, double>>(perlin_h)};
 };
