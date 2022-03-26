@@ -4,7 +4,7 @@ Terrain generation in [OpenFrameworks](https://github.com/openframeworks/openFra
 
 ## Terrain Generated
 
-![alt text](https://github.com/MiguelLameiras/Perlin-Noise/blob/master/5%20Layers.png)
+![alt text](https://github.com/MiguelLameiras/Perlin-Noise/blob/master/bin/data/5_Layers.png)
 
 ## 2D View
 
