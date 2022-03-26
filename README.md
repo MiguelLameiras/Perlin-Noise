@@ -4,7 +4,7 @@ Implementing Perlin Noise to terrain generation using [OpenFrameworks](https://g
 
 ## Terrain Generated
 
-![alt text](https://github.com/MiguelLameiras/Perlin-Noise/blob/master/OF_Screenshot.png)
+![alt text](https://github.com/MiguelLameiras/Perlin-Noise/blob/master/5%20Layers.png)
 
 ## 2D View
 
