@@ -147,7 +147,7 @@ void ofApp::GenerateMap()
 void ofApp::setup()
 {
     ofSetVerticalSync(true);
-    ofSetBackgroundColor(21, 26, 30);
+    ofSetBackgroundColor(12, 17, 23);
     glShadeModel(GL_FLAT);
     ofSetSmoothLighting(true);
 
