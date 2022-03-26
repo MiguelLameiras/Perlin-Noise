@@ -40,6 +40,7 @@ public:
 	ofLight light;
 	ofColor color;
 	ofMesh mesh;
+	ofImage	img;
 
 private:
 	// map size

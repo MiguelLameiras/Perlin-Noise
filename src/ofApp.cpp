@@ -188,6 +188,10 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
 {
+    if(key == 'p'){
+        img.grabScreen(0, 0 , ofGetWidth(), ofGetHeight());
+        img.save("5_Layers.png");
+    }
 }
 
 //--------------------------------------------------------------
