@@ -140,9 +140,15 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
 {
+    //Take a ScreenShot
     if(key == 'p'){
         img.grabScreen(0, 0 , ofGetWidth(), ofGetHeight());
         img.save("5_Layers.png");
+    }
+    //Generate a new map
+    if(key == ' '){
+        mesh.clear();
+        GenerateMap();
     }
 }
 
