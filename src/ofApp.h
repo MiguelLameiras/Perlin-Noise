@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "PerlinNoise.h"
 
 #include <iostream>
 #include <fstream>
@@ -30,8 +31,6 @@ public:
 	void EraseContents(string filename);
 	void WriteToFile(string, std::vector<double>);
 	std::vector<int> ReadFile(string, int);
-	double PerlinNoise(int, int,int,std::vector<std::vector<std::pair<double, double>>>);
-	std::vector<std::vector<std::pair<double, double>>> PerlinNoiseGradient();
 
 	void GenerateMap();
 	void setNormals(ofMesh &);

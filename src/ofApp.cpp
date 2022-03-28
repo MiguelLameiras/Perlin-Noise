@@ -55,69 +55,21 @@ vector<int> ofApp::ReadFile(string filename, int LINE)
     return coordinates;
 }
 
-std::vector<std::vector<std::pair<double, double>>> ofApp::PerlinNoiseGradient()
-{
-
-    std::vector<std::vector<std::pair<double, double>>> Gradient{w, std::vector<std::pair<double, double>>(h)};
-
-    // Generate grid of vectors
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
-            Gradient[x][y] = std::make_pair(ofRandom(-1, 1), ofRandom(-1, 1));
-            // std::cout << PerlinGradient[x][y].first << " " << PerlinGradient[x][y].second << std::endl;
-        }
-    }
-
-    return Gradient;
-}
-
-double ofApp::PerlinNoise(int x, int y,	int freq, std::vector<std::vector<std::pair<double, double>>> PerlinGradient)
-{
-    // Variable to hold final result
-    double z = 0;
-
-    // Center of the cell and not on corners
-    double real_x = x + 0.5;
-    double real_y = y + 0.5;
-
-    // Compute dot product between distance vector and gradient vectors
-    std::vector<double> dot_product;
-    std::vector<std::pair<int, int>> corners;
-    dot_product.clear();
-    corners.clear();
-    // Closest corners to point
-    corners.push_back(std::make_pair((int)real_x / freq, (int)real_y / freq));
-    corners.push_back(std::make_pair((int)real_x / freq + 1, (int)real_y / freq));
-    corners.push_back(std::make_pair((int)real_x / freq, (int)real_y / freq + 1));
-    corners.push_back(std::make_pair((int)real_x / freq + 1, (int)real_y / freq + 1));
-    // Calculate dot product between de distance vector and gradient vector
-    for (int i = 0; i < 4; i++)
-    {
-        dot_product.push_back(PerlinGradient[corners[i].first][corners[i].second].first * (real_x - corners[i].first * freq) + PerlinGradient[corners[i].first][corners[i].second].second * (real_y - corners[i].second * freq));
-        // std::cout << i << " " << dot_product[i] << " " << corners[i].first << " " << corners[i].second << std::endl;
-    }
-
-    // Interpolate dot product results -> Bilinear Interpolation
-
-    // Interpolate in x direction
-    std::vector<double> f;
-    f.clear();
-    f.push_back(((corners[1].first * freq - real_x) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[0] + ((real_x - corners[0].first * freq) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[1]);
-    f.push_back(((corners[1].first * freq - real_x) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[2] + ((real_x - corners[0].first * freq) / (corners[1].first * freq - corners[0].first * freq)) * dot_product[3]);
-
-    // Interpolate in the y direction
-    z = ((corners[0].second * freq - real_y) / (corners[2].second *freq - corners[0].second * freq)) * f[1] + ((real_y - corners[2].second * freq) / (corners[2].second * freq - corners[0].second * freq)) * f[0];
-
-    return z;
-}
-
 void ofApp::GenerateMap()
 {
     EraseContents("map.txt");
 
-    std::vector<std::vector<std::pair<double, double>>> PerlinGradient = PerlinNoiseGradient();
+    PerlinNoise P1(w,h,20);
+    PerlinNoise P2(w,h,5);
+    PerlinNoise P3(w,h,4);
+    PerlinNoise P4(w,h,3);
+    PerlinNoise P5(w,h,2);
+
+    P1.Generate_Gradient();
+    P2.Generate_Gradient();
+    P3.Generate_Gradient();
+    P4.Generate_Gradient();
+    P5.Generate_Gradient();
 
     std::vector<double> coordinates;
     for (int y = 0; y < h; y++)
@@ -127,7 +79,7 @@ void ofApp::GenerateMap()
             coordinates.clear();
             coordinates.push_back(x - w / 2);
             coordinates.push_back(y - w / 2);
-            coordinates.push_back(2*PerlinNoise(x, y, 20,PerlinGradient) + 1.5*PerlinNoise(x, y, 5,PerlinGradient) + 1*PerlinNoise(x, y, 4,PerlinGradient) + 0.5*PerlinNoise(x, y, 3,PerlinGradient)  + 0.5*PerlinNoise(x, y, 2,PerlinGradient) );
+            coordinates.push_back(2*P1.Compute_Height(x,y) + 1.5*P2.Compute_Height(x,y) + 1*P3.Compute_Height(x,y) + 0.5*P4.Compute_Height(x,y)  + 0.5*P5.Compute_Height(x,y));
 
             mesh.addVertex(ofPoint(coordinates[0], coordinates[1], coordinates[2]));
             mesh.addColor(ofFloatColor(62, 99, 86));
