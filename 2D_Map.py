@@ -13,7 +13,7 @@ matplotlib.rcParams.update({'text.color': '#eff6fc'})
 
 x,y,z = [],[],[]
 
-file = open("bin/map.txt")
+file = open("output/map.txt")
 
 for line in file:
     row = line.split(" ")
@@ -47,4 +47,5 @@ cbar.ax.yaxis.set_tick_params(color="#eff6fc")
 cbar.outline.set_edgecolor("#eff6fc")
 plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color="#eff6fc")
 
-plt.savefig("2D_Map.png", dpi = 300)
+
+plt.savefig("output/2D_Map.png", dpi = 300)

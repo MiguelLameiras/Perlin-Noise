@@ -2,6 +2,147 @@
 
 using namespace std;
 
+//--------------------------------------------------------------
+void ofApp::setup()
+{
+    ofSetVerticalSync(true);
+    ofSetBackgroundColor(12, 17, 23);
+    glShadeModel(GL_FLAT);
+    mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+    mesh.enableColors();
+    //ofEnableAlphaBlending();
+    //ofEnableSmoothing();
+    ofSetSmoothLighting(true);
+
+    // GUI
+    GUI.setup();
+    GUI.add(mapwidth.setup("Width", 100, 10, 500));
+    GUI.add(mapheight.setup("Height", 100, 10, 500));
+    GUI.add(floatslider1.setup("Amplitude 1", A[0], 0, 5));
+    GUI.add(intslider1.setup("Frequency 1", F[0], 2, 100));
+    GUI.add(floatslider2.setup("Amplitude 2", A[1], 0, 5));
+    GUI.add(intslider2.setup("Frequency 2", F[1], 2, 50));
+    GUI.add(floatslider3.setup("Amplitude 3", A[2], 0, 5));
+    GUI.add(intslider3.setup("Frequency 3", F[2], 2, 40));
+    GUI.add(floatslider4.setup("Amplitude 4", A[3], 0, 5));
+    GUI.add(intslider4.setup("Frequency 4", F[3], 2, 40));
+    GUI.add(floatslider5.setup("Amplitude 5", A[4], 0, 5));
+    GUI.add(intslider5.setup("Frequency 5", F[4], 2, 5));
+
+    GenerateMap();
+
+    light.enable();
+    light.setPointLight();
+    light.setPosition(0,0,100);
+}
+
+//--------------------------------------------------------------
+void ofApp::update()
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::draw()
+{
+    mesh.enableNormals();
+    cam.begin();
+    mesh.enableColors();
+    //mesh.drawWireframe();
+
+    mesh.disableColors();
+    ofSetColor(137,137,140);
+    ofFill();
+
+    ofEnableLighting();
+    mesh.drawFaces();
+    ofDisableLighting();
+
+    cam.end();
+
+    ofDisableDepthTest();
+    GUI.draw();
+    ofEnableDepthTest();
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key)
+{
+    // Take a ScreenShot
+    if (key == 's')
+    {
+        img.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+        img.save("../../output/5_Layers.png", OF_IMAGE_QUALITY_BEST);
+    }
+    // Generate a new map
+    if (key == ' ')
+    {
+        w = mapwidth;
+        h = mapheight;
+        A[0] = floatslider1;
+        F[0] = intslider1;
+        A[1] = floatslider2;
+        F[1] = intslider2;
+        A[2] = floatslider3;
+        F[2] = intslider3;
+        A[3] = floatslider4;
+        F[3] = intslider4;
+        A[4] = floatslider5;
+        F[4] = intslider5;
+        mesh.clear();
+        GenerateMap();
+    }
+    if (key == 'p')
+    {
+        std::cout << "\nSaving Plot..." << std::endl;
+        system("python3 ../2D_Map.py");
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::keyReleased(int key)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseMoved(int x, int y)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseDragged(int x, int y, int button)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mousePressed(int x, int y, int button)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::windowResized(int w, int h)
+{
+}
+
+//--------------------------------------------------------------
+void ofApp::gotMessage(ofMessage msg)
+{
+}
+
 void ofApp::EraseContents(string filename)
 {
     ofstream FILE;
@@ -52,18 +193,20 @@ vector<int> ofApp::ReadFile(string filename, int LINE)
         coordinates.push_back(stoi(s));
     }
 
+    FILE.close();
+
     return coordinates;
 }
 
 void ofApp::GenerateMap()
 {
-    EraseContents("map.txt");
+    EraseContents("../output/map.txt");
 
-    PerlinNoise P1(w,h,20);
-    PerlinNoise P2(w,h,5);
-    PerlinNoise P3(w,h,4);
-    PerlinNoise P4(w,h,3);
-    PerlinNoise P5(w,h,2);
+    PerlinNoise P1(w, h, F[0]);
+    PerlinNoise P2(w, h, F[1]);
+    PerlinNoise P3(w, h, F[2]);
+    PerlinNoise P4(w, h, F[3]);
+    PerlinNoise P5(w, h, F[4]);
 
     P1.Generate_Gradient();
     P2.Generate_Gradient();
@@ -79,12 +222,12 @@ void ofApp::GenerateMap()
             coordinates.clear();
             coordinates.push_back(x - w / 2);
             coordinates.push_back(y - w / 2);
-            coordinates.push_back(2*P1.Compute_Height(x,y) + 1.5*P2.Compute_Height(x,y) + 1*P3.Compute_Height(x,y) + 0.5*P4.Compute_Height(x,y)  + 0.5*P5.Compute_Height(x,y));
+            coordinates.push_back(A[0] * P1.Compute_Height(x, y) + A[1] * P2.Compute_Height(x, y) + A[2] * P3.Compute_Height(x, y) + A[3] * P4.Compute_Height(x, y) + A[4] * P5.Compute_Height(x, y));
 
             mesh.addVertex(ofPoint(coordinates[0], coordinates[1], coordinates[2]));
             mesh.addColor(ofFloatColor(62, 99, 86));
 
-            WriteToFile("map.txt", coordinates);
+            WriteToFile("../output/map.txt", coordinates);
         }
     }
 
@@ -102,132 +245,32 @@ void ofApp::GenerateMap()
         }
     }
 
-    setNormals(mesh);
+    setNormals();
 }
 
 //--------------------------------------------------------------
-void ofApp::setup()
+void ofApp::setNormals()
 {
-    ofSetVerticalSync(true);
-    ofSetBackgroundColor(12, 17, 23);
-    glShadeModel(GL_FLAT);
-    ofSetSmoothLighting(true);
+    for (int i = 0; i < mesh.getNumVertices(); i += 3)
+    {
 
-    GenerateMap();
-}
+        ofVec3f v0 = mesh.getVertex(i);
+        ofVec3f v1 = mesh.getVertex(i + 1);
+        ofVec3f v2 = mesh.getVertex(i + 2);
 
-//--------------------------------------------------------------
-void ofApp::update()
-{
-}
+        ofVec3f U = v1 - v0;
+        ofVec3f V = v2 - v0;
 
-//--------------------------------------------------------------
-void ofApp::draw()
-{
-    ofEnableLighting();
-    ofEnableDepthTest();
-    light.enable();
-    cam.begin();
+        float x = (U.y * V.z) - (U.z * V.y);
+        float y = (U.z * V.x) - (U.x * V.z);
+        float z = (U.x * V.y) - (U.y * V.x);
 
-    mesh.drawWireframe();
+        ofVec3f normal(x, y, z);
 
-    cam.end();
-    // light.disable();
-    // ofDisableDepthTest();
-    // ofDisableLighting();
-}
+        normal.normalize();
 
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key)
-{
-    //Take a ScreenShot
-    if(key == 'p'){
-        img.grabScreen(0, 0 , ofGetWidth(), ofGetHeight());
-        img.save("5_Layers.png");
+        mesh.addNormal(normal);
+        mesh.addNormal(normal);
+        mesh.addNormal(normal);
     }
-    //Generate a new map
-    if(key == ' '){
-        mesh.clear();
-        GenerateMap();
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::setNormals( ofMesh &mesh ){
-    //The number of the vertices
-    int nV = mesh.getNumVertices();
-    //The number of the triangles
-    int nT = mesh.getNumIndices() / 3;
-    vector<glm::vec3> norm( nV ); //Array for the normals
-    //Scan all the triangles. For each triangle add its
-    //normal to norm’s vectors of triangle’s vertices
-    for (int t=0; t<nT; t++) {
-        //Get indices of the triangle t
-        int i1 = mesh.getIndex( 3 * t );
-        int i2 = mesh.getIndex( 3 * t + 1 );
-        int i3 = mesh.getIndex( 3 * t + 2 );
-        //Get vertices of the triangle
-        const ofPoint &v1 = mesh.getVertex( i1 );
-        const ofPoint &v2 = mesh.getVertex( i2 );
-        const ofPoint &v3 = mesh.getVertex( i3 );
-        //Compute the triangle’s normal
-        ofPoint dir = ( (v2 - v1).getCrossed( v3 - v1 ) ).getNormalized();
-        //Accumulate it to norm array for i1, i2, i3
-        norm[ i1 ] += dir;
-        norm[ i2 ] += dir;
-        norm[ i3 ] += dir;
-    }
-    //Normalize the normal’s length
-    for (int i=0; i<nV; i++) {
-        norm[i] = glm::normalize(norm[i]);
-    }
-    //Set the normals to mesh
-    mesh.clearNormals();
-    mesh.addNormals(norm);
-    
 }

@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "PerlinNoise.h"
+#include "ofxGui.h"
 
 #include <iostream>
 #include <fstream>
@@ -33,16 +34,25 @@ public:
 	std::vector<int> ReadFile(string, int);
 
 	void GenerateMap();
-	void setNormals(ofMesh &);
+	void setNormals();
 
 	ofEasyCam cam;
 	ofLight light;
 	ofColor color;
-	ofMesh mesh;
-	ofImage	img;
+	ofVboMesh mesh;
+	ofImage img;
+
+	// GUI
+
+	ofxPanel GUI;
+
+	ofxIntSlider intslider1,intslider2,intslider3,intslider4,intslider5,mapwidth,mapheight;
+	ofxFloatSlider floatslider1,floatslider2,floatslider3,floatslider4,floatslider5;
 
 private:
 	// map size
 	int h = 100;
 	int w = 100;
+	double A[5] = {2,1.5,1,0.5,0.5};//Variables to hold amplitude value
+	int F[5] = {20,5,4,3,2};//Variables to hold frequency value
 };
