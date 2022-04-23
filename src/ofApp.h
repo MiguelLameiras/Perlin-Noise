@@ -34,7 +34,7 @@ public:
 	std::vector<int> ReadFile(string, int);
 
 	void GenerateMap();
-	void setNormals();
+	void calculateNormals();
 
 	ofEasyCam cam;
 	ofLight light;
@@ -46,13 +46,14 @@ public:
 
 	ofxPanel GUI;
 
-	ofxIntSlider intslider1,intslider2,intslider3,intslider4,intslider5,mapwidth,mapheight;
+	ofxIntSlider intslider1,intslider2,intslider3,intslider4,intslider5,mapwidth,mapheight,water_offset_slider;
 	ofxFloatSlider floatslider1,floatslider2,floatslider3,floatslider4,floatslider5;
 
 private:
 	// map size
 	int h = 100;
 	int w = 100;
-	double A[5] = {2,1.5,1,0.5,0.5};//Variables to hold amplitude value
+	int water_offset = 10;
+	double A[5] = {2, 1.5, 1, 0.5, 0.5}; // Variables to hold amplitude value
 	int F[5] = {20,5,4,3,2};//Variables to hold frequency value
 };

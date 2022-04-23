@@ -7,17 +7,20 @@ void ofApp::setup()
 {
     ofSetVerticalSync(true);
     ofSetBackgroundColor(12, 17, 23);
-    glShadeModel(GL_FLAT);
+    //glShadeModel(GL_FLAT);
     mesh.setMode(OF_PRIMITIVE_TRIANGLES);
     mesh.enableColors();
-    //ofEnableAlphaBlending();
-    //ofEnableSmoothing();
+    mesh.enableIndices();
+    mesh.enableNormals();
+    ofEnableAlphaBlending();
+    ofEnableSmoothing();
     ofSetSmoothLighting(true);
 
     // GUI
     GUI.setup();
     GUI.add(mapwidth.setup("Width", 100, 10, 500));
     GUI.add(mapheight.setup("Height", 100, 10, 500));
+    GUI.add(water_offset_slider.setup("Water Level", 10, 0, 50));
     GUI.add(floatslider1.setup("Amplitude 1", A[0], 0, 5));
     GUI.add(intslider1.setup("Frequency 1", F[0], 2, 100));
     GUI.add(floatslider2.setup("Amplitude 2", A[1], 0, 5));
@@ -33,7 +36,7 @@ void ofApp::setup()
 
     light.enable();
     light.setPointLight();
-    light.setPosition(0,0,100);
+    light.setPosition(100, 100, 100);
 }
 
 //--------------------------------------------------------------
@@ -44,14 +47,16 @@ void ofApp::update()
 //--------------------------------------------------------------
 void ofApp::draw()
 {
-    mesh.enableNormals();
     cam.begin();
-    mesh.enableColors();
     //mesh.drawWireframe();
 
-    mesh.disableColors();
-    ofSetColor(137,137,140);
+    ofSetColor(137, 137, 140);
     ofFill();
+
+    #ifndef TARGET_OPENGLES
+    glEnable(GL_POLYGON_OFFSET_LINE);
+    glPolygonOffset(-1, -1);
+    #endif
 
     ofEnableLighting();
     mesh.drawFaces();
@@ -78,6 +83,7 @@ void ofApp::keyPressed(int key)
     {
         w = mapwidth;
         h = mapheight;
+        water_offset = water_offset_slider;
         A[0] = floatslider1;
         F[0] = intslider1;
         A[1] = floatslider2;
@@ -222,11 +228,28 @@ void ofApp::GenerateMap()
             coordinates.clear();
             coordinates.push_back(x - w / 2);
             coordinates.push_back(y - w / 2);
-            coordinates.push_back(A[0] * P1.Compute_Height(x, y) + A[1] * P2.Compute_Height(x, y) + A[2] * P3.Compute_Height(x, y) + A[3] * P4.Compute_Height(x, y) + A[4] * P5.Compute_Height(x, y));
+            double z = water_offset + A[0] * P1.Compute_Height(x, y) + A[1] * P2.Compute_Height(x, y) + A[2] * P3.Compute_Height(x, y) + A[3] * P4.Compute_Height(x, y) + A[4] * P5.Compute_Height(x, y);
+            if (z > 0)
+                coordinates.push_back(z);
+            else 
+                coordinates.push_back(0);
 
             mesh.addVertex(ofPoint(coordinates[0], coordinates[1], coordinates[2]));
-            mesh.addColor(ofFloatColor(62, 99, 86));
 
+            /*if(coordinates[2] <= 0){
+                mesh.addColor(ofFloatColor(71, 91, 99));
+            }
+            /*if(coordinates[2] <= 10 && coordinates[2] > 0){
+                mesh.addColor(ofFloatColor(225, 228, 220));
+            }
+            if(coordinates[2] <= 30 && coordinates[2] > 10){
+                mesh.addColor(ofFloatColor(186, 205, 176));
+            }
+            else{
+                mesh.addColor(ofFloatColor(71, 91, 99));
+            }*/
+
+            mesh.addNormal(ofVec3f(0, 0, 0));
             WriteToFile("../output/map.txt", coordinates);
         }
     }
@@ -245,32 +268,25 @@ void ofApp::GenerateMap()
         }
     }
 
-    setNormals();
+    calculateNormals();
 }
 
 //--------------------------------------------------------------
-void ofApp::setNormals()
-{
-    for (int i = 0; i < mesh.getNumVertices(); i += 3)
-    {
+void ofApp::calculateNormals() {
+    int p1, p2, p3;
+    ofVec3f v1, v2, crossProduct;
 
-        ofVec3f v0 = mesh.getVertex(i);
-        ofVec3f v1 = mesh.getVertex(i + 1);
-        ofVec3f v2 = mesh.getVertex(i + 2);
+    for (int i = 0; i < mesh.getIndices().size(); i += 3) {
+        p1 = mesh.getIndices()[i];
+        p2 = mesh.getIndices()[i+1];
+        p3 = mesh.getIndices()[i+2];
 
-        ofVec3f U = v1 - v0;
-        ofVec3f V = v2 - v0;
+        v1 = mesh.getVertices()[p1] - mesh.getVertices()[p2];
+        v2 = mesh.getVertices()[p3] - mesh.getVertices()[p2];
+        crossProduct = v2.cross(v1);
 
-        float x = (U.y * V.z) - (U.z * V.y);
-        float y = (U.z * V.x) - (U.x * V.z);
-        float z = (U.x * V.y) - (U.y * V.x);
-
-        ofVec3f normal(x, y, z);
-
-        normal.normalize();
-
-        mesh.addNormal(normal);
-        mesh.addNormal(normal);
-        mesh.addNormal(normal);
+        mesh.getNormals()[p1] += crossProduct;
+        mesh.getNormals()[p2] += crossProduct;
+        mesh.getNormals()[p3] += crossProduct;
     }
 }

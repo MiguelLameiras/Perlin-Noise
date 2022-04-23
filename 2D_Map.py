@@ -10,6 +10,7 @@ matplotlib.rcParams['xtick.direction'] = 'in'
 plt.rcParams["figure.facecolor"] = "#0c1117"
 matplotlib.rcParams.update({'text.color': '#eff6fc'})
 
+print("\u001b[32mGenerating Plot...")
 
 x,y,z = [],[],[]
 
